@@ -10,6 +10,7 @@ import { ErrorFilter } from './core/error/error.filter';
 import { V1Module } from './modules/v1/v1.module';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 @Module({
   imports: [
@@ -27,6 +28,10 @@ import { GraphQLModule } from '@nestjs/graphql';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URL'),
+        connectionFactory: (connection) => {
+          connection.plugin(mongoosePaginate);
+          return connection;
+        },
       }),
       inject: [ConfigService],
     }),

@@ -13,49 +13,120 @@ import { BlockchainProvider } from '../interfaces/blockchain.interface';
 @Injectable()
 export class AlchemyProvider implements BlockchainProvider {
   private readonly alchemy: Alchemy;
-  private readonly notifyApi: NotifyNamespace;
   private readonly logger = new Logger(AlchemyProvider.name);
-  private readonly webhookId: string;
+  webhookId = this.configService.getOrThrow<string>('ALCHEMY_WEBHOOK_ID');
+  network = this.configService.get<string>('ETH_NETWORK') || 'sepolia';
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.getOrThrow<string>('ALCHEMY_API_KEY');
-    this.webhookId =
-      this.configService.getOrThrow<string>('ALCHEMY_WEBHOOK_ID');
+    const authToken = this.configService.get<string>('ALCHEMY_AUTH_TOKEN');
 
     // Map network string to Alchemy Network type
     let alchemyNetwork = Network.ETH_SEPOLIA;
     if (process.env.NODE_ENV === 'development') {
       alchemyNetwork = Network.ETH_SEPOLIA;
-    } else {
-      alchemyNetwork = Network.ETH_MAINNET;
     }
 
     // Initialize Alchemy SDK
     this.alchemy = new Alchemy({
       apiKey,
       network: alchemyNetwork,
+      ...(authToken && {
+        authToken,
+      }),
     });
-
-    this.notifyApi = this.alchemy.notify;
   }
+
+  provider = new ethers.AlchemyProvider(
+    this.network,
+    this.configService.get<string>('ALCHEMY_API_KEY'),
+  );
+
   getGasPrice(): Promise<string> {
     throw new Error('Method not implemented.');
   }
 
-  async registerAddressForNotifications(address: string): Promise<boolean> {
+  /**
+   * Get a single transaction by hash
+   * @param txHash The transaction hash to lookup
+   * @returns Transaction details or null if not found
+   */
+  async getTransaction(txHash: string): Promise<{
+    hash: string;
+    fromAddress: string;
+    toAddress: string;
+    value: string;
+    timestamp: Date;
+    status: string;
+    blockNumber: string;
+    gasUsed?: string;
+    gasPrice?: string;
+    confirmations: number;
+  } | null> {
     try {
-      if (!this.webhookId) {
-        this.logger.warn(
-          'No webhook ID configured, skipping address registration',
-        );
-        return false;
+      // Get transaction details
+      const tx = await this.provider.getTransaction(txHash);
+      if (!tx) {
+        return null; // Transaction not found
       }
 
+      // Get transaction receipt for status and gas used
+      const receipt = await this.provider.getTransactionReceipt(txHash);
+
+      // Get block for timestamp
+      let timestamp = new Date();
+      if (tx.blockNumber) {
+        const block = await this.provider.getBlock(tx.blockNumber);
+        if (block?.timestamp) {
+          timestamp = new Date(Number(block.timestamp) * 1000);
+        }
+      }
+
+      // Get current block for confirmations
+      const currentBlock = await this.provider.getBlockNumber();
+      const confirmations = tx.blockNumber
+        ? currentBlock - tx.blockNumber + 1
+        : 0;
+
+      // Determine status
+      let status = 'pending';
+      if (receipt) {
+        status = receipt.status ? 'confirmed' : 'failed';
+      } else if (confirmations > 0) {
+        status = 'confirmed';
+      }
+
+      return {
+        hash: tx.hash,
+        fromAddress: tx.from,
+        toAddress: tx.to || '0x0000000000000000000000000000000000000000',
+        value: ethers.formatEther(tx.value),
+        timestamp,
+        status,
+        blockNumber: tx.blockNumber
+          ? `0x${tx.blockNumber.toString(16)}`
+          : '0x0',
+        gasUsed: receipt ? receipt.gasUsed.toString() : undefined,
+        gasPrice: tx.gasPrice
+          ? ethers.formatUnits(tx.gasPrice, 'gwei')
+          : undefined,
+        confirmations,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get transaction ${txHash}: ${error.message}`,
+      );
+      return null;
+    }
+  }
+
+  async registerAddressForNotifications(address: string): Promise<boolean> {
+    try {
       // Normalize address format
       const formattedAddress = address.trim();
 
       // Add address to webhook monitoring
-      await this.notifyApi.updateWebhook(this.webhookId, {
+      await this.alchemy.notify.updateWebhook(this.webhookId, {
         addAddresses: [formattedAddress],
       });
 
@@ -64,6 +135,7 @@ export class AlchemyProvider implements BlockchainProvider {
       );
       return true;
     } catch (error) {
+      console.error('Error registering address for notifications:', error);
       this.logger.error(
         `Failed to register address for notifications: ${error.message}`,
       );
@@ -104,15 +176,9 @@ export class AlchemyProvider implements BlockchainProvider {
   ): Promise<any> {
     try {
       // Create a provider from Alchemy
-      const network =
-        this.configService.get<string>('ETH_NETWORK') || 'sepolia';
-      const provider = new ethers.AlchemyProvider(
-        network,
-        this.configService.get<string>('ALCHEMY_API_KEY'),
-      );
 
       // Create wallet with private key and provider
-      const wallet = new ethers.Wallet(fromPrivateKey, provider);
+      const wallet = new ethers.Wallet(fromPrivateKey, this.provider);
 
       // Create transaction object
       const tx = {
@@ -134,8 +200,8 @@ export class AlchemyProvider implements BlockchainProvider {
   async getTransactionHistory(address: string): Promise<
     {
       hash: string;
-      from: string;
-      to: string;
+      fromAddress: string;
+      toAddress: string;
       value: string;
       timestamp: Date;
       status: string;
@@ -156,8 +222,10 @@ export class AlchemyProvider implements BlockchainProvider {
           AssetTransfersCategory.ERC721,
           AssetTransfersCategory.ERC1155,
         ],
-        maxCount: 100,
+        maxCount: 10,
       });
+
+      console.log('Sent Transactions:', sentTransactions);
 
       // Fetch received transactions
       const receivedTransactions = await this.alchemy.core.getAssetTransfers({
@@ -170,7 +238,7 @@ export class AlchemyProvider implements BlockchainProvider {
           AssetTransfersCategory.ERC721,
           AssetTransfersCategory.ERC1155,
         ],
-        maxCount: 100,
+        maxCount: 10,
       });
 
       // Combine and process transactions
@@ -221,8 +289,8 @@ export class AlchemyProvider implements BlockchainProvider {
 
           return {
             hash: transfer.hash || 'unknown',
-            from: transfer.from || 'unknown',
-            to: transfer.to || 'unknown',
+            fromAddress: transfer.from || 'unknown',
+            toAddress: transfer.to || 'unknown',
             value: transfer.value ? transfer.value.toString() : '0',
             timestamp,
             status,

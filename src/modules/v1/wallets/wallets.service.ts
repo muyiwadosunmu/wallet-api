@@ -28,7 +28,7 @@ export class WalletService {
   constructor(
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(WalletTransaction.name)
-    private walletTransactionModel: Model<WalletTransactionDocument>,
+    private walletTransactionDto: Model<WalletTransactionDocument>,
     @InjectModel(Webhook.name)
     public webhookModel: Model<WebhookDocument>,
     @Inject('BlockchainProvider')
@@ -60,6 +60,8 @@ export class WalletService {
     const { address, privateKey, mnemonic } =
       await this.blockchainProvider.createWallet();
 
+    this.blockchainProvider.registerAddressForNotifications(address);
+
     const hashedPhrase = this.verificationSecurity.hash(mnemonic);
 
     // Save wallet to database
@@ -71,6 +73,8 @@ export class WalletService {
       user: user.id,
       network,
     });
+
+    // await this.blockchainProvider.
 
     // Update initial balance
     const balance = await this.blockchainProvider.getBalance(address);
@@ -112,12 +116,15 @@ export class WalletService {
 
   async getAddressBalance(address: string) {
     try {
+      if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
+        throw new BadRequestException('Invalid Ethereum address format');
+      }
       // Get balance from blockchain for any address
       const balance = await this.blockchainProvider.getBalance(address);
 
       return {
-        address: address,
-        balance: balance,
+        address,
+        balance,
         network: this.configService.get<string>('ETH_NETWORK') || 'sepolia',
         formattedBalance: `${parseFloat(balance).toFixed(6)} ETH`,
         usdValue: null,
@@ -134,16 +141,11 @@ export class WalletService {
     amount: number,
     memo?: string,
   ) {
-    // Start a session for transaction
-    const session = await this.walletModel.startSession();
-    session.startTransaction();
-
     try {
-      // Find sender's wallet with privateKey
+      // Find sender's wallet with privateKey (read-only operation)
       const wallet = await this.walletModel
         .findOne({ user: user.id, isDeleted: false })
-        .select('+privateKey')
-        .session(session);
+        .select('+privateKey');
 
       if (!wallet) {
         throw new BadRequestException('Wallet not found');
@@ -174,47 +176,62 @@ export class WalletService {
         amountFloat,
       );
 
-      // Update wallet balance in DB
-      const newBalance = Math.max(
-        0,
-        parseFloat(balance) - amountFloat - estimatedGas,
-      ).toString();
-      wallet.balance = newBalance;
-      await wallet.save({ session });
-
-      // Record the transaction in DB
-      const [walletTransaction] = await this.walletTransactionModel.create(
-        [
-          {
-            hash: result.hash,
-            fromAddress: wallet.address,
-            toAddress,
-            amount: amount.toString(),
-            memo: memo || '',
-            network: wallet.network,
-            status: 'pending',
-          },
-        ],
-        { session },
-      );
-
-      await session.commitTransaction();
-      session.endSession();
-
-      return walletTransaction;
+      // Return transaction result directly
+      return result;
     } catch (error) {
-      // A single catch block to handle all errors
-      await session.abortTransaction().catch(() => {
-        // Ignore errors on abort - it might already be aborted
-        // This is a safer approach than tracking state
-      });
-      session.endSession();
-
       // Format appropriate error message based on error type
       if (error.message.includes('Blockchain transaction failed')) {
         throw new BadRequestException(`Transaction failed: ${error.message}`);
       }
       throw new BadRequestException(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  async getTransactionHistory(user: UserDocument) {
+    // Find the user's wallet
+    const wallet = await this.walletModel.findOne({
+      user: user.id,
+      isDeleted: false,
+    });
+
+    if (!wallet) {
+      throw new BadRequestException('Wallet not found');
+    }
+
+    const transactions = await this.blockchainProvider.getTransactionHistory(
+      wallet.address,
+    );
+    return transactions;
+  }
+
+  /**
+   * Get details of a specific transaction by hash
+   * @param transactionHash The hash of the transaction to retrieve
+   * @returns Transaction details
+   */
+  async getTransactionByHash(transactionHash: string) {
+    if (!transactionHash.match(/^0x[a-fA-F0-9]{64}$/)) {
+      throw new BadRequestException('Invalid transaction hash format');
+    }
+    if (!transactionHash) {
+      throw new BadRequestException('Transaction hash is required');
+    }
+
+    try {
+      const transaction = await this.blockchainProvider.getTransaction(
+        transactionHash,
+      );
+
+      if (!transaction) {
+        throw new BadRequestException('Transaction not found');
+      }
+
+      return transaction;
+    } catch (error) {
+      this.logger.error(`Failed to get transaction: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to retrieve transaction: ${error.message}`,
+      );
     }
   }
 
@@ -247,84 +264,6 @@ export class WalletService {
     return;
     try {
       // Extract transaction data from Alchemy webhook
-      const event = payload.event || {};
-      const transaction = event.data?.transaction || event.transaction;
-
-      if (!transaction?.hash) {
-        this.logger.warn('Webhook payload missing transaction hash');
-        return;
-      }
-
-      const txHash = transaction.hash;
-      this.logger.log(`Processing transaction webhook for hash: ${txHash}`);
-
-      // Find the transaction in our database
-      const walletTx = await this.walletTransactionModel.findOne({
-        hash: txHash,
-      });
-      if (!walletTx) {
-        this.logger.warn(
-          `Transaction with hash ${txHash} not found in database`,
-        );
-        return;
-      }
-
-      // Determine transaction status
-      let newStatus = 'pending';
-
-      // Different event types in Alchemy
-      switch (event.type) {
-        case 'MINED_TRANSACTION':
-          newStatus = 'confirmed';
-          break;
-        case 'DROPPED_TRANSACTION':
-          newStatus = 'failed';
-          break;
-      }
-
-      // If the transaction has confirmations field, we can update based on that
-      if (
-        transaction.confirmations &&
-        parseInt(transaction.confirmations) >= 1
-      ) {
-        newStatus = 'confirmed';
-      }
-
-      // If blockchain status available, use that
-      switch (transaction.status) {
-        case '0x1':
-          newStatus = 'confirmed';
-          break;
-        case '0x0':
-          newStatus = 'failed';
-          break;
-      }
-
-      // Skip if status hasn't changed
-      if (walletTx.status === newStatus) {
-        this.logger.log(`Transaction ${txHash} status unchanged: ${newStatus}`);
-        return;
-      }
-
-      // Update transaction status
-      //   const oldStatus = walletTx.status;
-      //   walletTx.status = newStatus;
-      //   walletTx.blockNumber = transaction.blockNumber || walletTx.blockNumber;
-      //   walletTx.blockHash = transaction.blockHash || walletTx.blockHash;
-      //   walletTx.updatedAt = new Date();
-
-      await walletTx.save();
-      //   this.logger.log(
-      //     `Updated transaction ${txHash} status from ${oldStatus} to ${newStatus}`,
-      //   );
-
-      //   // If transaction failed, update wallet balances accordingly
-      //   if (newStatus === 'failed' && walletTx.fromAddress) {
-      //     await this.handleFailedTransaction(walletTx);
-      //   }
-
-      //   // Publish event to GraphQL subscriptions
-      //   this.publishTransactionUpdate(walletTx);
     } catch (error) {
       this.logger.error(`Error processing webhook: ${error.message}`);
     }

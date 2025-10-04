@@ -17,7 +17,7 @@ import { User, UserDocument } from 'src/modules/v1/users/schema/user.schema';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(User.name) private UserDto: Model<UserDocument>,
     public readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly verificationSecurity: VerificationSecurity,
@@ -29,7 +29,7 @@ export class AuthService {
    * @returns UserDocument
    */
   async getUserById(id: string): Promise<UserDocument> {
-    return await this.userModel.findById(id);
+    return await this.UserDto.findById(id);
   }
 
   /**
@@ -39,7 +39,7 @@ export class AuthService {
    */
   async registerUser(body: RegisterUserDto): Promise<UserDocument> {
     body.email = body.email.trim().toLowerCase();
-    const alreadyExist = await this.userModel.exists({ email: body.email });
+    const alreadyExist = await this.UserDto.exists({ email: body.email });
 
     if (alreadyExist)
       throw new ConflictException(
@@ -47,7 +47,7 @@ export class AuthService {
       );
 
     body.password = this.verificationSecurity.hash(body.password);
-    const user = await this.userModel.create(body);
+    const user = await this.UserDto.create(body);
     user.password = undefined;
     return user;
   }
@@ -74,11 +74,9 @@ export class AuthService {
   async login(body: LoginDto) {
     //Check for email in web and mobile db
     body.email = body.email.trim().toLowerCase();
-    const user = await this.userModel
-      .findOne({
-        email: body.email,
-      })
-      .select('+password');
+    const user = await this.UserDto.findOne({
+      email: body.email,
+    }).select('+password');
 
     if (!user)
       throw new BadRequestException(
