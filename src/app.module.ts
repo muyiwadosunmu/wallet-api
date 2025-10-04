@@ -8,6 +8,8 @@ import { AppService } from './app.service';
 import { CoreModule } from './core/core.module';
 import { ErrorFilter } from './core/error/error.filter';
 import { V1Module } from './modules/v1/v1.module';
+import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
 
 @Module({
   imports: [
@@ -30,6 +32,14 @@ import { V1Module } from './modules/v1/v1.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: 'src/schema.gql',
+      sortSchema: true,
+      playground: true,
+      introspection: true,
     }),
   ],
   controllers: [AppController],

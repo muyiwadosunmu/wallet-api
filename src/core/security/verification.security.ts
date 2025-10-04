@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
-
 @Injectable()
 export class VerificationSecurity {
   constructor() {}
@@ -43,5 +42,5 @@ export class VerificationSecurity {
       return false;
     }
     return bcrypt.compareSync(text, hashedText);
-  };
+  }
 }
