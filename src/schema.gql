@@ -1,0 +1,95 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CreatedUserDto {
+  email: String!
+  firstName: String
+  id: ID!
+  lastName: String
+}
+
+type CreatedWalletModel {
+  address: String!
+  balance: String
+  createdAt: DateTime
+  id: ID!
+  isDeleted: Boolean!
+  mnemonic: String
+  network: String
+  updatedAt: DateTime
+  user: UserModel!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type LoggedInUserDto {
+  id: ID!
+  token: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  generateWallet: CreatedWalletModel!
+  login(input: LoginInput!): LoggedInUserDto!
+  register(input: RegisterInput!): CreatedUserDto!
+  transferFunds(input: TransferFundsInput!): TransactionModel!
+}
+
+type Query {
+  getAddressBalance(address: String!): WalletBalanceModel!
+  getWalletBalance: WalletBalanceModel!
+  me: UserModel!
+}
+
+input RegisterInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+}
+
+type TransactionModel {
+  amount: String!
+  createdAt: DateTime!
+  fromAddress: String!
+  hash: String!
+  memo: String
+  network: String!
+  status: String!
+  toAddress: String!
+  updatedAt: DateTime!
+}
+
+input TransferFundsInput {
+  amount: Float!
+  memo: String
+  toAddress: String!
+}
+
+type UserModel {
+  createdAt: DateTime
+  deleted: Boolean!
+  email: String!
+  firstName: String
+  id: ID!
+  lastName: String
+  suspended: Boolean!
+  updatedAt: DateTime
+}
+
+type WalletBalanceModel {
+  address: String!
+  balance: String!
+  formattedBalance: String
+  lastUpdated: DateTime!
+  network: String!
+  usdValue: String
+}

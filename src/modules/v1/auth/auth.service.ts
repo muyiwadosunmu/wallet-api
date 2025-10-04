@@ -9,9 +9,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { WebEmail } from 'src/core/email/webEmail';
 import { VerificationSecurity } from 'src/core/security/verification.security';
-import { User, UserDocument } from '../users/schema/user.schema';
+
 import { LoginDto } from './dto/login.dto';
 import { RegisterUserDto } from './dto/register.dto';
+import { User, UserDocument } from 'src/modules/v1/users/schema/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -25,10 +26,10 @@ export class AuthService {
   /**
    *
    * @param {String} id user id
-   * @returns User
+   * @returns UserDocument
    */
   async getUserById(id: string): Promise<UserDocument> {
-    return this.userModel.findById(id);
+    return await this.userModel.findById(id);
   }
 
   /**
@@ -37,6 +38,7 @@ export class AuthService {
    * @returns
    */
   async registerUser(body: RegisterUserDto): Promise<UserDocument> {
+    body.email = body.email.trim().toLowerCase();
     const alreadyExist = await this.userModel.exists({ email: body.email });
 
     if (alreadyExist)
@@ -46,11 +48,6 @@ export class AuthService {
 
     body.password = this.verificationSecurity.hash(body.password);
     const user = await this.userModel.create(body);
-
-    this.webEmail.sendWelcomeEmail(
-      `${user.firstName} ${user.lastName}`,
-      user.email,
-    );
     user.password = undefined;
     return user;
   }
@@ -76,6 +73,7 @@ export class AuthService {
    */
   async login(body: LoginDto) {
     //Check for email in web and mobile db
+    body.email = body.email.trim().toLowerCase();
     const user = await this.userModel
       .findOne({
         email: body.email,
@@ -101,8 +99,6 @@ export class AuthService {
     return {
       token: await this.generateToken(user),
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
     };
   }
 }
