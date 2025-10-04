@@ -1,7 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class WalletBalanceModel {
+export class WalletBalanceDto {
   @Field()
   address: string;
 

@@ -1,21 +1,21 @@
 import {
-  Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
   Logger,
+  Param,
   Post,
   RawBodyRequest,
   Req,
 } from '@nestjs/common';
-import {
-  IRequestIPAndUserAgent,
-  RequestIPAndUserAgent,
-} from 'src/core/decorators/logged-in-decorator';
 import { WalletService } from './wallets.service';
-import fs from 'fs/promises';
-import path from 'path';
+import { WebhookSource } from './enums/enums';
+import {
+  RequestIPAndUserAgent,
+  IRequestIPAndUserAgent,
+} from 'src/core/decorators/logged-in-decorator';
 
 @Controller('v1/wallet')
 export class WalletController {
@@ -23,10 +23,32 @@ export class WalletController {
 
   constructor(private readonly walletService: WalletService) {}
 
+  /**
+   * Get details of a transaction by hash
+   * @param txHash Transaction hash to lookup
+   */
+  @Get('transaction/:txHash')
+  async getTransaction(@Param('txHash') txHash: string) {
+    try {
+      const transaction = await this.walletService.getTransactionByHash(txHash);
+      return {
+        success: true,
+        transaction,
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching transaction: ${error.message}`);
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
   @HttpCode(HttpStatus.OK) // Always return 200 OK to Alchemy
   @Post('webhook')
   async handleAlchemyWalletsWebhook(
     @Req() req: RawBodyRequest<Request>,
+    @RequestIPAndUserAgent() ipAndUserAgent: IRequestIPAndUserAgent,
     @Headers('x-alchemy-signature') signature: string,
   ) {
     try {
@@ -56,6 +78,14 @@ export class WalletController {
       const payload = JSON.parse(rawBody.toString('utf-8'));
 
       this.logger.log(`Received valid webhook: ${JSON.stringify(payload)}`);
+
+      await this.walletService.webhookModel.create({
+        source: WebhookSource.Alchemy,
+        event: payload?.event,
+        ip: ipAndUserAgent.ip,
+        userAgent: ipAndUserAgent.userAgent,
+        data: payload,
+      });
 
       // Process the webhook
       await this.walletService.processWebhookEvent(payload);

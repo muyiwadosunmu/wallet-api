@@ -1,9 +1,9 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { UserModel } from './User';
+import { UserDto } from './user.dto';
 import { User } from 'src/modules/v1/users/schema/user.schema';
 
 @ObjectType()
-export class CreatedWalletModel {
+export class CreatedWalletDto {
   @Field(() => ID)
   id: string;
 
@@ -23,8 +23,8 @@ export class CreatedWalletModel {
   @Field({ nullable: true })
   network: string;
 
-  @Field(() => UserModel)
-  user: UserModel;
+  @Field(() => UserDto)
+  user: UserDto;
 
   @Field(() => Boolean)
   isDeleted: boolean;

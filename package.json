@@ -42,6 +42,7 @@
     "graphql": "^16.11.0",
     "i": "^0.3.7",
     "mongoose": "^8.3.5",
+    "mongoose-paginate-v2": "^1.9.1",
     "nodemailer": "^6.9.13",
     "nodemailer-express-handlebars": "^6.1.2",
     "npm": "^10.7.0",

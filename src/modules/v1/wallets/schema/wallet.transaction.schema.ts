@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { Wallet, WalletDocument } from './wallet.schema';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export type WalletTransactionDocument = WalletTransaction & Document;
 @Schema({ timestamps: true, versionKey: false })
@@ -38,5 +39,7 @@ const WalletTransactionSchema = SchemaFactory.createForClass(
     delete ret._id;
   },
 });
+
+WalletTransactionSchema.plugin(mongoosePaginate);
 
 export default WalletTransactionSchema;

@@ -7,8 +7,8 @@ export class Webhook {
   @Prop()
   source: string;
 
-  @Prop()
-  event: string;
+  @Prop({ type: Object })
+  event: Record<string, any>;
 
   @Prop()
   ip: string;

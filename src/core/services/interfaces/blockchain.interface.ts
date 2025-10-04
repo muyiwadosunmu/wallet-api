@@ -5,6 +5,7 @@ export interface BlockchainProvider {
     mnemonic: string;
   }>;
   getBalance(address: string): Promise<string>;
+  registerAddressForNotifications(address: string): Promise<boolean>;
   sendTransaction(
     fromPrivateKey: string,
     toAddress: string,
@@ -12,4 +13,5 @@ export interface BlockchainProvider {
   ): Promise<{ hash: string }>;
   getTransactionHistory(address: string): Promise<any[]>;
   getGasPrice(): Promise<string>; // Add this method
+  getTransaction(txHash: string): Promise<any | null>; // Method to get a single transaction by hash
 }

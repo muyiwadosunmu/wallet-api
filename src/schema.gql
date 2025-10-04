@@ -9,7 +9,7 @@ type CreatedUserDto {
   lastName: String
 }
 
-type CreatedWalletModel {
+type CreatedWalletDto {
   address: String!
   balance: String
   createdAt: DateTime
@@ -18,7 +18,7 @@ type CreatedWalletModel {
   mnemonic: String
   network: String
   updatedAt: DateTime
-  user: UserModel!
+  user: UserDto!
 }
 
 """
@@ -37,16 +37,18 @@ input LoginInput {
 }
 
 type Mutation {
-  generateWallet: CreatedWalletModel!
+  generateWallet: CreatedWalletDto!
   login(input: LoginInput!): LoggedInUserDto!
   register(input: RegisterInput!): CreatedUserDto!
-  transferFunds(input: TransferFundsInput!): TransactionModel!
+  transferFunds(input: TransferFundsInput!): TransactionDto!
 }
 
 type Query {
-  getAddressBalance(address: String!): WalletBalanceModel!
-  getWalletBalance: WalletBalanceModel!
-  me: UserModel!
+  getAddressBalance(address: String!): WalletBalanceDto!
+  getTransaction(hash: String!): TransactionDto!
+  getTransactionHistory: [TransactionDto!]!
+  getWalletBalance: WalletBalanceDto!
+  me: UserDto!
 }
 
 input RegisterInput {
@@ -56,16 +58,19 @@ input RegisterInput {
   password: String!
 }
 
-type TransactionModel {
-  amount: String!
-  createdAt: DateTime!
+type TransactionDto {
+  asset: String
+  blockNumber: String!
+  category: String
+  confirmations: Float
   fromAddress: String!
+  gasPrice: String
+  gasUsed: String
   hash: String!
-  memo: String
-  network: String!
   status: String!
+  timestamp: DateTime!
   toAddress: String!
-  updatedAt: DateTime!
+  value: String!
 }
 
 input TransferFundsInput {
@@ -74,7 +79,7 @@ input TransferFundsInput {
   toAddress: String!
 }
 
-type UserModel {
+type UserDto {
   createdAt: DateTime
   deleted: Boolean!
   email: String!
@@ -85,7 +90,7 @@ type UserModel {
   updatedAt: DateTime
 }
 
-type WalletBalanceModel {
+type WalletBalanceDto {
   address: String!
   balance: String!
   formattedBalance: String

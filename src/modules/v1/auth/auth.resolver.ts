@@ -6,16 +6,16 @@ import { LoginInput, RegisterInput } from './dto/auth.input';
 import {
   CreatedUserDto,
   LoggedInUserDto,
-  UserModel,
-} from 'src/graphql/models/User';
+  UserDto,
+} from 'src/graphql/models/user.dto';
 
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Query(() => UserModel)
+  @Query(() => UserDto)
   @GqlProtected()
-  async me(@LoggedInGqlUser() user: UserModel): Promise<UserModel> {
+  async me(@LoggedInGqlUser() user: UserDto): Promise<UserDto> {
     return user;
   }
 

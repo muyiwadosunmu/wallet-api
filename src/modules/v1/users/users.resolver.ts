@@ -1,9 +1,9 @@
 import { Query, Resolver } from '@nestjs/graphql';
-import { UserModel } from 'src/graphql/models/User';
+import { UserDto } from 'src/graphql/models/user.dto';
 
 @Resolver()
 export class UserResolver {
-  @Query(() => UserModel)
+  @Query(() => UserDto)
   getUsers() {
     return {
       id: '01',

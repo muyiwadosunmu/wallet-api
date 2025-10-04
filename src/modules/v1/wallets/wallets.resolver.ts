@@ -5,16 +5,16 @@ import { UserDocument } from '../users/schema/user.schema';
 import { CreateWalletInput } from './dto/create-wallet.input';
 import { Wallet } from './schema/wallet.schema';
 import { WalletService } from './wallets.service';
-import { CreatedWalletModel } from 'src/graphql/models/Wallet';
-import { WalletBalanceModel } from 'src/graphql/models/WalletBalance';
-import { TransactionModel } from 'src/graphql/models/Transaction';
+import { CreatedWalletDto } from 'src/graphql/models/created-wallet.dto';
+import { WalletBalanceDto } from 'src/graphql/models/wallet-balance.dto';
+import { TransactionDto } from 'src/graphql/models/transaction.dto';
 import { TransferFundsInput } from './dto/transfer-funds.input';
 
 @Resolver()
 export class WalletsResolver {
   constructor(private readonly walletsService: WalletService) {}
 
-  @Mutation(() => CreatedWalletModel)
+  @Mutation(() => CreatedWalletDto)
   @GqlProtected()
   async generateWallet(
     @LoggedInGqlUser() user: UserDocument,
@@ -23,23 +23,18 @@ export class WalletsResolver {
     return this.walletsService.createWallet(user);
   }
 
-  @Query(() => WalletBalanceModel)
+  @Query(() => WalletBalanceDto)
   @GqlProtected()
   async getWalletBalance(@LoggedInGqlUser() user: UserDocument) {
     return this.walletsService.getWalletBalance(user);
   }
 
-  @Query(() => WalletBalanceModel)
+  @Query(() => WalletBalanceDto)
   async getAddressBalance(@Args('address') address: string) {
-    // Basic validation for Ethereum address format
-    if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
-      throw new Error('Invalid Ethereum address format');
-    }
-
     return this.walletsService.getAddressBalance(address);
   }
 
-  @Mutation(() => TransactionModel)
+  @Mutation(() => TransactionDto)
   @GqlProtected()
   async transferFunds(
     @LoggedInGqlUser() user: UserDocument,
@@ -51,6 +46,19 @@ export class WalletsResolver {
       transferInput.amount,
       transferInput.memo,
     );
+  }
+
+  @Query(() => [TransactionDto])
+  @GqlProtected()
+  async getTransactionHistory(@LoggedInGqlUser() user: UserDocument) {
+    return this.walletsService.getTransactionHistory(user);
+  }
+
+  @Query(() => TransactionDto)
+  async getTransaction(@Args('hash') hash: string) {
+    // Basic validation for transaction hash format
+
+    return this.walletsService.getTransactionByHash(hash);
   }
 
   // @Query(() => [Wallet], { name: 'wallets' })
