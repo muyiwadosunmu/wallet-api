@@ -3,17 +3,6 @@ import { UserDocument } from 'src/modules/v1/users/schema/user.schema';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
-// Admin decorator
-export const LoggedInUser = createParamDecorator(
-  async (data = '', ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-
-    const user: UserDocument = request.user;
-
-    return user;
-  },
-);
-
 export const LoggedInGqlUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const ctx = GqlExecutionContext.create(context);

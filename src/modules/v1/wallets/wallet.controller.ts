@@ -67,7 +67,7 @@ export class WalletController {
       });
 
       // Process the webhook
-      await this.walletService.processWebhookEvent(payload);
+      this.walletService.processWebhookEvent(payload);
 
       return { success: true };
     } catch (error) {
