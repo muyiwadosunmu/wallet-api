@@ -1,4 +1,4 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, Float, InputType } from '@nestjs/graphql';
 import {
   IsEthereumAddress,
   IsNotEmpty,
@@ -15,7 +15,7 @@ export class TransferFundsInput {
   @IsNotEmpty()
   toAddress: string;
 
-  @Field()
+  @Field(() => Float)
   @IsNumber()
   @Min(0.000001, { message: 'Amount must be at least 0.000001 ETH' })
   amount: number;

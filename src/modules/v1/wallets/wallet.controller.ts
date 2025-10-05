@@ -23,27 +23,6 @@ export class WalletController {
 
   constructor(private readonly walletService: WalletService) {}
 
-  /**
-   * Get details of a transaction by hash
-   * @param txHash Transaction hash to lookup
-   */
-  @Get('transaction/:txHash')
-  async getTransaction(@Param('txHash') txHash: string) {
-    try {
-      const transaction = await this.walletService.getTransactionByHash(txHash);
-      return {
-        success: true,
-        transaction,
-      };
-    } catch (error) {
-      this.logger.error(`Error fetching transaction: ${error.message}`);
-      return {
-        success: false,
-        message: error.message,
-      };
-    }
-  }
-
   @HttpCode(HttpStatus.OK) // Always return 200 OK to Alchemy
   @Post('webhook')
   async handleAlchemyWalletsWebhook(
