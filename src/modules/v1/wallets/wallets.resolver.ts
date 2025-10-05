@@ -9,7 +9,7 @@ import {
 } from 'src/graphql/dtos/ether-transaction.dto';
 import { WalletBalanceDto } from 'src/graphql/dtos/wallet-balance.dto';
 import { UserDocument } from '../users/schema/user.schema';
-import { TransferFundsInput } from './dto/transfer-funds.input';
+import { TransferFundsInput } from '../../../graphql/dtos/transfer-funds.input';
 import { WalletService } from './wallets.service';
 import { AlchemyTransactionDto } from 'src/graphql/dtos/alchemy-transaction.dto';
 

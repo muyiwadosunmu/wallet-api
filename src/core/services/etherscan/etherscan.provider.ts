@@ -50,7 +50,7 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
         offset: pageSize.toString(),
         startblock: '0',
         endblock: '99999999',
-        sort: 'asc',
+        sort: 'desc',
         apikey: this.apiKey,
       };
 
