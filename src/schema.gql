@@ -2,6 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AlchemyTransactionDto {
+  asset: String
+  blockNumber: String!
+  category: String
+  confirmations: Int!
+  fromAddress: String!
+  gasPrice: String!
+  gasUsed: String!
+  hash: String!
+  status: String!
+  timestamp: String!
+  toAddress: String!
+  value: String!
+}
+
 type CreatedUserDto {
   email: String!
   firstName: String
@@ -26,6 +41,26 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type EtherTransactionDto {
+  asset: String
+  blockHash: String!
+  blockNumber: String!
+  confirmations: Int!
+  contractAddress: String
+  cumulativeGasUsed: String!
+  from: String!
+  gas: String!
+  gasUsed: String!
+  hash: String!
+  isError: String!
+  nonce: String!
+  timeStamp: String!
+  to: String!
+  transactionIndex: String!
+  txreceipt_status: String!
+  value: String!
+}
+
 type LoggedInUserDto {
   id: ID!
   token: String!
@@ -40,13 +75,13 @@ type Mutation {
   generateWallet: CreatedWalletDto!
   login(input: LoginInput!): LoggedInUserDto!
   register(input: RegisterInput!): CreatedUserDto!
-  transferFunds(input: TransferFundsInput!): TransactionDto!
+  transferFunds(input: TransferFundsInput!): TransactionHashDto!
 }
 
 type Query {
   getAddressBalance(address: String!): WalletBalanceDto!
-  getTransaction(hash: String!): TransactionDto!
-  getTransactions(page: Int = 1, pageSize: Int = 10): [TransactionDto!]!
+  getTransaction(hash: String!): AlchemyTransactionDto!
+  getTransactions(page: Int = 1, pageSize: Int = 10): [EtherTransactionDto!]!
   getWalletBalance: WalletBalanceDto!
   me: UserDto!
 }
@@ -58,23 +93,8 @@ input RegisterInput {
   password: String!
 }
 
-type TransactionDto {
-  asset: String
-  blockHash: String!
-  blockNumber: String!
-  confirmations: Float
-  contractAddress: String
-  cumulativeGasUsed: String
-  from: String!
-  gas: String!
-  gasUsed: String
+type TransactionHashDto {
   hash: String!
-  isError: String
-  nonce: String!
-  timestamp: DateTime
-  to: String!
-  txreceipt_status: String
-  value: String!
 }
 
 input TransferFundsInput {

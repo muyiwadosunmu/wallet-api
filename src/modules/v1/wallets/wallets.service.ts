@@ -29,7 +29,7 @@ export class WalletService {
   constructor(
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(WalletTransaction.name)
-    private walletTransactionDto: Model<WalletTransactionDocument>,
+    private walletEtherTransactionDto: Model<WalletTransactionDocument>,
     @InjectModel(Webhook.name)
     public webhookModel: Model<WebhookDocument>,
     @Inject('BlockchainProvider')
@@ -287,17 +287,11 @@ export class WalletService {
     address: string,
     page = 1,
     pageSize = 100,
-    contractAddress?: string,
   ) {
     if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
       throw new BadRequestException('Invalid Ethereum address format');
     }
 
-    return this.etherscanProvider.getTokenTransactions(
-      address,
-      page,
-      pageSize,
-      contractAddress,
-    );
+    return this.etherscanProvider.getTokenTransactions(address, page, pageSize);
   }
 }

@@ -2,11 +2,16 @@ import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { GqlProtected } from 'src/core/decorators/access.decorator';
 import { LoggedInGqlUser } from 'src/core/decorators/logged-in-decorator';
 import { CreatedWalletDto } from 'src/graphql/dtos/created-wallet.dto';
-import { TransactionDto } from 'src/graphql/dtos/transaction.dto';
+import {
+  EtherTransactionDto,
+  TransactionDto,
+  TransactionHashDto,
+} from 'src/graphql/dtos/ether-transaction.dto';
 import { WalletBalanceDto } from 'src/graphql/dtos/wallet-balance.dto';
 import { UserDocument } from '../users/schema/user.schema';
 import { TransferFundsInput } from './dto/transfer-funds.input';
 import { WalletService } from './wallets.service';
+import { AlchemyTransactionDto } from 'src/graphql/dtos/alchemy-transaction.dto';
 
 @Resolver()
 export class WalletsResolver {
@@ -29,7 +34,7 @@ export class WalletsResolver {
     return this.walletsService.getAddressBalance(address);
   }
 
-  @Mutation(() => TransactionDto)
+  @Mutation(() => TransactionHashDto)
   @GqlProtected()
   async transferFunds(
     @LoggedInGqlUser() user: UserDocument,
@@ -43,7 +48,7 @@ export class WalletsResolver {
     );
   }
 
-  @Query(() => [TransactionDto])
+  @Query(() => [EtherTransactionDto])
   @GqlProtected()
   async getTransactions(
     @LoggedInGqlUser() user: UserDocument,
@@ -63,7 +68,7 @@ export class WalletsResolver {
     return this.walletsService.getTransactions(user, page, pageSize);
   }
 
-  @Query(() => TransactionDto)
+  @Query(() => AlchemyTransactionDto)
   async getTransaction(@Args('hash') hash: string) {
     return this.walletsService.getTransactionByHash(hash);
   }
