@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import * as crypto from 'node:crypto';
 import { VerificationSecurity } from 'src/core/security/verification.security';
 import { BlockchainProvider } from 'src/core/services/interfaces/blockchain.interface';
+import { EtherscanProvider } from 'src/core/services/etherscan/etherscan.provider';
 import { UserDocument } from '../users/schema/user.schema';
 import { WalletDocument } from './schema/wallet.schema';
 import {
@@ -35,18 +36,16 @@ export class WalletService {
     private readonly blockchainProvider: BlockchainProvider,
     private readonly configService: ConfigService,
     private readonly verificationSecurity: VerificationSecurity,
+    private readonly etherscanProvider: EtherscanProvider,
   ) {
     this.webhookSecret = this.configService.getOrThrow<string>(
       'ALCHEMY_WEBHOOK_SIGNING_KEY',
     );
+    this.network = this.configService.get<string>('ETH_NETWORK') || 'sepolia';
   }
 
-  async createWallet(
-    user: UserDocument,
-    // createWalletDto: CreateWalletInput,
-  ): Promise<WalletDocument> {
+  async createWallet(user: UserDocument): Promise<WalletDocument> {
     // Check if user already has a wallet
-    const network = this.configService.get<string>('ETH_NETWORK') || 'sepolia';
     const existingWallet = await this.walletModel.findOne({
       user: user.id,
       isDeleted: false,
@@ -56,7 +55,7 @@ export class WalletService {
       throw new BadRequestException('You already have an active wallet');
     }
 
-    // Create a new wallet using blockchain provider
+    // Create a new wallet using blockchain provider, alchemy
     const { address, privateKey, mnemonic } =
       await this.blockchainProvider.createWallet();
 
@@ -71,7 +70,7 @@ export class WalletService {
       mnemonic,
       hashedMnemonic: hashedPhrase,
       user: user.id,
-      network,
+      network: this.network,
     });
 
     // await this.blockchainProvider.
@@ -187,23 +186,6 @@ export class WalletService {
     }
   }
 
-  async getTransactions(user: UserDocument) {
-    // Find the user's wallet
-    const wallet = await this.walletModel.findOne({
-      user: user.id,
-      isDeleted: false,
-    });
-
-    if (!wallet) {
-      throw new BadRequestException('Wallet not found');
-    }
-
-    const transactions = await this.blockchainProvider.getTransactionHistory(
-      wallet.address,
-    );
-    return transactions;
-  }
-
   /**
    * Get details of a specific transaction by hash
    * @param transactionHash The hash of the transaction to retrieve
@@ -261,11 +243,61 @@ export class WalletService {
    * Process webhook event from Alchemy
    */
   async processWebhookEvent(payload: any): Promise<void> {
-    return;
+    // Prevent unused parameter lint error
+    if (!payload) return;
+
     try {
       // Extract transaction data from Alchemy webhook
     } catch (error) {
       this.logger.error(`Error processing webhook: ${error.message}`);
     }
+  }
+
+  /**
+   * Get ERC20 token transactions for the logged-in user's wallet
+   * @param user The logged-in user
+   * @param page Page number (starts at 1)
+   * @param pageSize Number of transactions per page
+   * @param contractAddress Optional contract address to filter by
+   * @returns Array of token transactions
+   */
+  async getTransactions(user: UserDocument, page = 1, pageSize = 10) {
+    // Find the user's wallet
+    const wallet = await this.walletModel.findOne({
+      user: user.id,
+      isDeleted: false,
+    });
+
+    if (!wallet) {
+      throw new BadRequestException('Wallet not found');
+    }
+
+    return this.getAddressTransactions(wallet.address, page, pageSize);
+  }
+
+  /**
+   * Get ERC20 token transactions for any address
+   * @param address Ethereum address to get token transactions for
+   * @param page Page number (starts at 1)
+   * @param pageSize Number of transactions per page
+   * @param contractAddress Optional contract address to filter by
+   * @returns Array of token transactions
+   */
+  private async getAddressTransactions(
+    address: string,
+    page = 1,
+    pageSize = 100,
+    contractAddress?: string,
+  ) {
+    if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
+      throw new BadRequestException('Invalid Ethereum address format');
+    }
+
+    return this.etherscanProvider.getTokenTransactions(
+      address,
+      page,
+      pageSize,
+      contractAddress,
+    );
   }
 }
