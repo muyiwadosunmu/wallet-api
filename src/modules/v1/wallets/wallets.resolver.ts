@@ -5,9 +5,9 @@ import { UserDocument } from '../users/schema/user.schema';
 import { CreateWalletInput } from './dto/create-wallet.input';
 import { Wallet } from './schema/wallet.schema';
 import { WalletService } from './wallets.service';
-import { CreatedWalletDto } from 'src/graphql/models/created-wallet.dto';
-import { WalletBalanceDto } from 'src/graphql/models/wallet-balance.dto';
-import { TransactionDto } from 'src/graphql/models/transaction.dto';
+import { CreatedWalletDto } from 'src/graphql/dtos/created-wallet.dto';
+import { WalletBalanceDto } from 'src/graphql/dtos/wallet-balance.dto';
+import { TransactionDto } from 'src/graphql/dtos/transaction.dto';
 import { TransferFundsInput } from './dto/transfer-funds.input';
 
 @Resolver()
@@ -50,8 +50,8 @@ export class WalletsResolver {
 
   @Query(() => [TransactionDto])
   @GqlProtected()
-  async getTransactionHistory(@LoggedInGqlUser() user: UserDocument) {
-    return this.walletsService.getTransactionHistory(user);
+  async getTransactions(@LoggedInGqlUser() user: UserDocument) {
+    return this.walletsService.getTransactions(user);
   }
 
   @Query(() => TransactionDto)

@@ -187,7 +187,7 @@ export class WalletService {
     }
   }
 
-  async getTransactionHistory(user: UserDocument) {
+  async getTransactions(user: UserDocument) {
     // Find the user's wallet
     const wallet = await this.walletModel.findOne({
       user: user.id,
