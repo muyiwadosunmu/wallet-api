@@ -25,6 +25,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@mutabazia/mongoose-pagination-express": "^1.0.5",
     "@nestjs/apollo": "^13.2.1",
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^9.0.0",

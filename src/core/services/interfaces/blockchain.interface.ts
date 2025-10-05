@@ -10,7 +10,7 @@ export interface BlockchainProvider {
     fromPrivateKey: string,
     toAddress: string,
     amount: number,
-  ): Promise<{ hash: string }>;
+  ): Promise<string>;
   getTransactionHistory(address: string): Promise<any[]>;
   getGasPrice(): Promise<string>; // Add this method
   getTransaction(txHash: string): Promise<any | null>; // Method to get a single transaction by hash

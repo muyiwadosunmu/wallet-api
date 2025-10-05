@@ -1,12 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  Alchemy,
-  AssetTransfersCategory,
-  Network,
-  Utils,
-  NotifyNamespace,
-} from 'alchemy-sdk';
+import { Alchemy, AssetTransfersCategory, Network, Utils } from 'alchemy-sdk';
 import { ethers } from 'ethers';
 import { BlockchainProvider } from '../interfaces/blockchain.interface';
 

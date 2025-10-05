@@ -1,5 +1,5 @@
 import { Query, Resolver } from '@nestjs/graphql';
-import { UserDto } from 'src/graphql/models/user.dto';
+import { UserDto } from 'src/graphql/dtos/user.dto';
 
 @Resolver()
 export class UserResolver {
