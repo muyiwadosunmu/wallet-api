@@ -7,7 +7,7 @@ import {
   CreatedUserDto,
   LoggedInUserDto,
   UserDto,
-} from 'src/graphql/models/user.dto';
+} from 'src/graphql/dtos/user.dto';
 
 @Resolver()
 export class AuthResolver {

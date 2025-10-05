@@ -46,7 +46,7 @@ type Mutation {
 type Query {
   getAddressBalance(address: String!): WalletBalanceDto!
   getTransaction(hash: String!): TransactionDto!
-  getTransactionHistory: [TransactionDto!]!
+  getTransactions: [TransactionDto!]!
   getWalletBalance: WalletBalanceDto!
   me: UserDto!
 }
