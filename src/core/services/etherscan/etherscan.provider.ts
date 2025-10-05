@@ -37,8 +37,7 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
     address: string,
     page = 1,
     pageSize = 10,
-    contractAddress?: string,
-  ): Promise<EtherscanTokenTransaction[]> {
+  ): Promise<any[]> {
     try {
       this.logger.log(`Fetching token transactions for ${address}`);
 
@@ -51,23 +50,14 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
         offset: pageSize.toString(),
         startblock: '0',
         endblock: '99999999',
-        sort: 'desc',
+        sort: 'asc',
         apikey: this.apiKey,
       };
 
-      // Add contract address filter if provided
-      if (contractAddress) {
-        params.contractaddress = contractAddress;
-      }
-
       // Make API call
-      const response: AxiosResponse<EtherscanTokenTransactionResponse> =
-        await lastValueFrom(
-          this.httpService.get<EtherscanTokenTransactionResponse>(
-            this.baseUrl,
-            { params },
-          ),
-        );
+      const response: AxiosResponse<any> = await lastValueFrom(
+        this.httpService.get<any>(this.baseUrl, { params }),
+      );
 
       const { data } = response;
 
@@ -79,7 +69,6 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
       const result = data.result.map((tx) => ({
         ...tx,
         page,
-        // We don't get total count from Etherscan API, so we can't calculate totalPages accurately
         totalItems:
           data.result.length < pageSize ? data.result.length : undefined,
         totalPages: data.result.length < pageSize ? 1 : undefined,
