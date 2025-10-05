@@ -55,7 +55,7 @@ export class AuthService {
    * @param {UserDocument} user
    * @returns
    */
-  async generateToken(user: UserDocument) {
+  private async generateToken(user: UserDocument) {
     const payload = { sub: user.id };
     const token = this.jwtService.sign(payload, {
       expiresIn: this.configService.get('JWT_EXPIRY'),

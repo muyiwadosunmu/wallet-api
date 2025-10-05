@@ -38,7 +38,7 @@ export class GqlAuthGuard implements CanActivate {
   async checkUser(request: IRequest): Promise<UserDocument> {
     // 1. Extract the token from header
     const token = this.extractBearerToken(request);
-    console.log(token);
+    // console.log(token);
 
     // 2. Verify token is valid and for user
     const { id } = await this.verifyToken(token);
