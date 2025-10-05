@@ -4,13 +4,12 @@
 
 DATABASE - Mongo DB.
 
-[API DOCS](https://documenter.getpostman.com/view/34965333/2sA3kRKjPc) API Postman Documentation - https://documenter.getpostman.com/view/34965333/2sA3kRKjPc)
+<!-- [API DOCS](https://documenter.getpostman.com/view/34965333/2sA3kRKjPc) API Postman Documentation - https://documenter.getpostman.com/view/34965333/2sA3kRKjPc) -->
 
-[BASEURL](https://niyo-api.onrender.com/api) - https://niyo-api.onrender.com/api
+[BASEURL](https://wallet-api-ylqb.onrender.com/graphql) - https://wallet-api-ylqb.onrender.com/graphql)
 
-[SOCKET BASEURL](https://niyo-api.onrender.com/api) - https://niyo-api.onrender.com?userId=664530ac6747c370222775a8
 <p align="left">
-  <img src="https://res.cloudinary.com/ddghgu232/image/upload/v1715867894/b3w8kinorwcdlvse6bkj.png" width="1000" title="hover text">
+  <img src="https://res.cloudinary.com/dcm3rb2us/image/upload/v1759707963/Screenshot_2025-10-05_at_10.33.32_PM_dbci8i.png" width="1000" title="hover text">
 </p>
 ## DATABASE
 
@@ -21,23 +20,31 @@ Mongo DB.
 Create .env file
 
 ```
-MONGO_URL=""
-NODE_ENV='development'
-
-#token
+NODE_ENV=
+PORT=
 ACCESS_TOKEN_SECRET=""
-JWT_EXPIRY=1d
+JWT_EXPIRY=""
+MONGO_URL=""
+JWT_SECRET=hdbcbdcnejcedckdnxdhcxbhdbcdbchdbchchdjcdnjdjxdjxdxjdxkdxjdxd
+THROTTLE_LIMIT=
+THROTTLE_TTL=
 
-# EMAIL
-EMAIL=""
-EMAIL_PASSWORD= ""
+ALCHEMY_API_KEY=
+ETH_NETWORK=
+SEPOLIA_TESTNET_URL=
+ETHERSCAN_BASE_URL=""
+ETHERSCAN_API_KEY=""
+SEPOLIA_CHAIN_ID=""
+ALCHEMY_WEBHOOK_ID=""
+ALCHEMY_AUTH_TOKEN=""
+ALCHEMY_WEBHOOK_SIGNING_KEY=""
 
 ```
 
 ## Installation
 
 ```bash
-$ npm install
+$ npm install --legacy-peer-deps
 ```
 
 ## Running the app
@@ -52,3 +59,25 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Running Tests
+
+```bash
+# Run all tests
+$ npm test
+
+# Run all tests with watch mode
+$ npm run test:watch
+
+# Run all tests with coverage reports
+$ npm run test:cov
+
+# Run tests for a specific file
+$ npm run test:file src/path/to/your/file.spec.ts
+
+# Run tests for a specific file with coverage
+$ npm run test:file src/path/to/your/file.spec.ts -- --coverage
+```
+
+The coverage report will be generated in the `coverage` directory. For individual file coverage, 
+only the specific file being tested will be included in the coverage report.
