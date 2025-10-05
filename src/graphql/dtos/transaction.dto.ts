@@ -7,22 +7,28 @@ export class TransactionDto {
   hash: string;
 
   @Field()
+  blockHash: string;
+
+  @Field()
+  nonce: string;
+
+  @Field()
   @IsEthereumAddress()
-  fromAddress: string;
+  from: string;
 
   @Field()
   @IsEthereumAddress()
   @IsOptional()
-  toAddress: string;
+  to: string;
 
   @Field()
   value: string;
 
   @Field()
-  timestamp: Date;
+  gas: string;
 
-  @Field()
-  status: string;
+  @Field({ nullable: true })
+  timestamp: Date;
 
   @Field()
   blockNumber: string;
@@ -31,13 +37,19 @@ export class TransactionDto {
   asset?: string;
 
   @Field({ nullable: true })
-  category?: string;
+  isError: string;
+
+  @Field({ nullable: true })
+  txreceipt_status?: string;
+
+  @Field({ nullable: true })
+  contractAddress: string;
+
+  @Field({ nullable: true })
+  cumulativeGasUsed?: string;
 
   @Field({ nullable: true })
   gasUsed?: string;
-
-  @Field({ nullable: true })
-  gasPrice?: string;
 
   @Field({ nullable: true })
   confirmations?: number;

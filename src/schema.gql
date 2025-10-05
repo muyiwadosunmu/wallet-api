@@ -46,7 +46,7 @@ type Mutation {
 type Query {
   getAddressBalance(address: String!): WalletBalanceDto!
   getTransaction(hash: String!): TransactionDto!
-  getTransactions: [TransactionDto!]!
+  getTransactions(page: Int = 1, pageSize: Int = 10): [TransactionDto!]!
   getWalletBalance: WalletBalanceDto!
   me: UserDto!
 }
@@ -60,16 +60,20 @@ input RegisterInput {
 
 type TransactionDto {
   asset: String
+  blockHash: String!
   blockNumber: String!
-  category: String
   confirmations: Float
-  fromAddress: String!
-  gasPrice: String
+  contractAddress: String
+  cumulativeGasUsed: String
+  from: String!
+  gas: String!
   gasUsed: String
   hash: String!
-  status: String!
-  timestamp: DateTime!
-  toAddress: String!
+  isError: String
+  nonce: String!
+  timestamp: DateTime
+  to: String!
+  txreceipt_status: String
   value: String!
 }
 

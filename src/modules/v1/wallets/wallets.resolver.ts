@@ -1,14 +1,12 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { GqlProtected } from 'src/core/decorators/access.decorator';
 import { LoggedInGqlUser } from 'src/core/decorators/logged-in-decorator';
-import { UserDocument } from '../users/schema/user.schema';
-import { CreateWalletInput } from './dto/create-wallet.input';
-import { Wallet } from './schema/wallet.schema';
-import { WalletService } from './wallets.service';
 import { CreatedWalletDto } from 'src/graphql/dtos/created-wallet.dto';
-import { WalletBalanceDto } from 'src/graphql/dtos/wallet-balance.dto';
 import { TransactionDto } from 'src/graphql/dtos/transaction.dto';
+import { WalletBalanceDto } from 'src/graphql/dtos/wallet-balance.dto';
+import { UserDocument } from '../users/schema/user.schema';
 import { TransferFundsInput } from './dto/transfer-funds.input';
+import { WalletService } from './wallets.service';
 
 @Resolver()
 export class WalletsResolver {
@@ -16,10 +14,7 @@ export class WalletsResolver {
 
   @Mutation(() => CreatedWalletDto)
   @GqlProtected()
-  async generateWallet(
-    @LoggedInGqlUser() user: UserDocument,
-    // @Args('') createWalletInput: CreateWalletInput,
-  ) {
+  async generateWallet(@LoggedInGqlUser() user: UserDocument) {
     return this.walletsService.createWallet(user);
   }
 
@@ -50,36 +45,26 @@ export class WalletsResolver {
 
   @Query(() => [TransactionDto])
   @GqlProtected()
-  async getTransactions(@LoggedInGqlUser() user: UserDocument) {
-    return this.walletsService.getTransactions(user);
+  async getTransactions(
+    @LoggedInGqlUser() user: UserDocument,
+    @Args('page', {
+      nullable: true,
+      defaultValue: 1,
+      type: () => Int,
+    })
+    page?: number,
+    @Args('pageSize', {
+      nullable: true,
+      defaultValue: 10,
+      type: () => Int,
+    })
+    pageSize?: number,
+  ) {
+    return this.walletsService.getTransactions(user, page, pageSize);
   }
 
   @Query(() => TransactionDto)
   async getTransaction(@Args('hash') hash: string) {
-    // Basic validation for transaction hash format
-
     return this.walletsService.getTransactionByHash(hash);
   }
-
-  // @Query(() => [Wallet], { name: 'wallets' })
-  // findAll() {
-  //   return this.walletsService.findAll();
-  // }
-
-  // @Query(() => Wallet, { name: 'wallet' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.walletsService.findOne(id);
-  // }
-
-  // @Mutation(() => Wallet)
-  // updateWallet(
-  //   @Args('updateWalletInput') updateWalletInput: UpdateWalletInput,
-  // ) {
-  //   return this.walletsService.update(updateWalletInput.id, updateWalletInput);
-  // }
-
-  // @Mutation(() => Wallet)
-  // removeWallet(@Args('id', { type: () => Int }) id: number) {
-  //   return this.walletsService.remove(id);
-  // }
 }
