@@ -107,7 +107,6 @@ export class WalletService {
       balance: wallet.balance,
       network: wallet.network,
       formattedBalance: `${parseFloat(balance).toFixed(6)} ETH`,
-      // Could add price conversion here if you add a price feed service
       usdValue: 'N/A',
       lastUpdated: new Date(),
     };
@@ -141,7 +140,6 @@ export class WalletService {
     memo?: string,
   ) {
     try {
-      // Find sender's wallet with privateKey (read-only operation)
       const wallet = await this.walletModel
         .findOne({ user: user.id, isDeleted: false })
         .select('+privateKey');
@@ -158,7 +156,7 @@ export class WalletService {
       const balance = await this.blockchainProvider.getBalance(wallet.address);
       const amountFloat = parseFloat(amount.toString());
 
-      // Check if sender has enough funds (including a buffer for gas)
+      // Check if sender has enough funds + gas fee
       const estimatedGas = 0.0001;
       if (parseFloat(balance) < amountFloat + estimatedGas) {
         throw new BadRequestException(
