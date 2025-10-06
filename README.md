@@ -202,3 +202,31 @@ only the specific file being tested will be included in the coverage report.
 
 6. **Deployment Strategy**: Separated development (main branch) from staging deployment to ensure stable testing environments.
 
+## Postman Integration Notes
+
+### GraphQL API Testing with Postman
+
+When testing the GraphQL API with Postman, you can use the GraphQL interface to send mutations and queries. For authenticated endpoints, you'll need to include the JWT token in the Authorization header.
+
+### Token Management in Postman
+
+After successful login using the login mutation, the API returns a JWT token that should be used for subsequent authenticated requests. 
+
+A test script is configured in the Postman login request to automatically set the token as an environment variable:
+
+```javascript
+// Postman test script for login mutation
+pm.environment.set("TOKEN", pm.response.data.login.token);
+```
+
+**Note:** If the automatic token setting isn't working in your environment, you may need to manually set the Bearer token in the Authorization header for subsequent requests. This can happen due to Postman environment configuration issues or the specific structure of the GraphQL response.
+
+#### Manual Token Setup in Postman
+
+1. After login, copy the token value from the response
+2. For authenticated requests, go to the "Authorization" tab
+3. Select "Bearer Token" as the type
+4. Paste the token in the "Token" field
+
+All protected GraphQL operations (those with the `@GqlProtected()` decorator) require this token to be included in the request headers.
+
