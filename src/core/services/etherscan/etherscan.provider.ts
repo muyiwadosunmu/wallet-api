@@ -26,7 +26,7 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
   }
 
   /**
-   * Get ERC20 token transactions for an address with pagination
+   * Get transactions for an address with pagination
    * @param address Ethereum address to get token transactions for
    * @param page Page number (starts from 1)
    * @param pageSize Number of transactions per page (offset in Etherscan API)
@@ -84,8 +84,7 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
 
   /**
    * Get transaction details by hash
-   * This is a placeholder implementation to satisfy the BlockchainProvider interface
-   * You may want to implement this method using the Etherscan API
+   * This is a placeholder implementation to satisfy the BlockchainProvider interfacee
    */
   async getTransaction(txHash: string): Promise<any> {
     try {
@@ -109,7 +108,6 @@ export class EtherscanProvider implements Partial<BlockchainProvider> {
 
   /**
    * Get balance for an address
-   * This is a placeholder implementation to satisfy the BlockchainProvider interface
    */
   async getBalance(address: string): Promise<string> {
     try {

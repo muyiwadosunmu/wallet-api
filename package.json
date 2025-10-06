@@ -34,6 +34,7 @@
     "@nestjs/mapped-types": "^2.0.5",
     "@nestjs/mongoose": "^10.0.6",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/throttler": "^6.4.0",
     "alchemy-sdk": "^3.6.5",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
