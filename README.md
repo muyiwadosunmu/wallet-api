@@ -160,7 +160,7 @@ After starting the application, the GraphQL playground will be available at `htt
 
 ## API Features
 
-- **User Authentication**: Register and login with JWT-based authentication
+- **Basic User Authentication**: Register and login with JWT-based authentication
 - **Wallet Management**: Create and manage Ethereum wallets
 - **Balance Checking**: Query wallet balances in real-time from the blockchain
 - **Transaction History**: View transaction history for wallets
@@ -192,8 +192,6 @@ only the specific file being tested will be included in the coverage report.
 
 1. **NestJS Framework**: Chosen for its structured approach to building scalable server-side applications with TypeScript support. The modular architecture allows for easy maintenance and extension.
 
-2. **GraphQL over REST**: Selected for its flexibility in data fetching, strong typing, and reduced over-fetching/under-fetching of data.
-
 3. **MongoDB**: Offers flexible schema design that works well with blockchain data which can have varying structures.
 
 4. **Multiple Blockchain Providers**: Implemented both Alchemy and Etherscan integrations to leverage strengths of each:
@@ -204,11 +202,31 @@ only the specific file being tested will be included in the coverage report.
 
 6. **Deployment Strategy**: Separated development (main branch) from staging deployment to ensure stable testing environments.
 
-## Future Enhancements
+## Postman Integration Notes
 
-- Implement WebSocket notifications for real-time transaction updates
-- Add ERC-20 token support
-- Enhance transaction history filtering and pagination
-- Improve test coverage for services and providers
-- Add end-to-end testing with actual blockchain test networks
+### GraphQL API Testing with Postman
+
+When testing the GraphQL API with Postman, you can use the GraphQL interface to send mutations and queries. For authenticated endpoints, you'll need to include the JWT token in the Authorization header.
+
+### Token Management in Postman
+
+After successful login using the login mutation, the API returns a JWT token that should be used for subsequent authenticated requests. 
+
+A test script is configured in the Postman login request to automatically set the token as an environment variable:
+
+```javascript
+// Postman test script for login mutation
+pm.environment.set("TOKEN", pm.response.data.login.token);
+```
+
+**Note:** If the automatic token setting isn't working in your environment, you may need to manually set the Bearer token in the Authorization header for subsequent requests. This can happen due to Postman environment configuration issues or the specific structure of the GraphQL response.
+
+#### Manual Token Setup in Postman
+
+1. After login, copy the token value from the response
+2. For authenticated requests, go to the "Authorization" tab
+3. Select "Bearer Token" as the type
+4. Paste the token in the "Token" field
+
+All protected GraphQL operations (those with the `@GqlProtected()` decorator) require this token to be included in the request headers.
 
