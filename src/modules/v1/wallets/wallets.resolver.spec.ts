@@ -231,8 +231,7 @@ describe('WalletsResolver', () => {
       );
 
       // Assert
-      // In a real application, NestJS would apply default values from the @Args decorators
-      // but in the test, they are passed through as undefined
+
       expect(mockWalletService.getTransactions).toHaveBeenCalledWith(
         mockUser,
         undefined,
