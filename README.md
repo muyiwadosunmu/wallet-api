@@ -160,7 +160,7 @@ After starting the application, the GraphQL playground will be available at `htt
 
 ## API Features
 
-- **User Authentication**: Register and login with JWT-based authentication
+- **Basic User Authentication**: Register and login with JWT-based authentication
 - **Wallet Management**: Create and manage Ethereum wallets
 - **Balance Checking**: Query wallet balances in real-time from the blockchain
 - **Transaction History**: View transaction history for wallets
@@ -192,8 +192,6 @@ only the specific file being tested will be included in the coverage report.
 
 1. **NestJS Framework**: Chosen for its structured approach to building scalable server-side applications with TypeScript support. The modular architecture allows for easy maintenance and extension.
 
-2. **GraphQL over REST**: Selected for its flexibility in data fetching, strong typing, and reduced over-fetching/under-fetching of data.
-
 3. **MongoDB**: Offers flexible schema design that works well with blockchain data which can have varying structures.
 
 4. **Multiple Blockchain Providers**: Implemented both Alchemy and Etherscan integrations to leverage strengths of each:
@@ -203,12 +201,4 @@ only the specific file being tested will be included in the coverage report.
 5. **Testing Strategy**: Focused on unit testing resolvers and services with high coverage to ensure reliability of core functionality.
 
 6. **Deployment Strategy**: Separated development (main branch) from staging deployment to ensure stable testing environments.
-
-## Future Enhancements
-
-- Implement WebSocket notifications for real-time transaction updates
-- Add ERC-20 token support
-- Enhance transaction history filtering and pagination
-- Improve test coverage for services and providers
-- Add end-to-end testing with actual blockchain test networks
 
