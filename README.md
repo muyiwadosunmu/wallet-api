@@ -11,9 +11,12 @@ A robust GraphQL API for managing Ethereum wallets, supporting wallet creation, 
   <img src="https://res.cloudinary.com/dcm3rb2us/image/upload/v1759707963/Screenshot_2025-10-05_at_10.33.32_PM_dbci8i.png" width="1000" title="Wallet API GraphQL Playground">
 </p>
 
+## POSTMAN
+[POSTMAN] (https://cotrackr.postman.co/workspace/Team-Workspace~548c7996-064d-4072-8759-5b0725115be1/collection/68dfaa707e837c6a87eb02f5?action=share&creator=38863685&active-environment=38863685-d30ab188-b0dd-4799-ba04-7126d5b76fd1)
+
 ## Technology Stack & Architecture
 
-### Backend Engineering Skills
+### Backend 
 
 - **NestJS Framework**: Chosen for its modular architecture, TypeScript integration, and built-in support for dependency injection
 - **Apollo GraphQL**: Implemented a robust GraphQL API with resolvers, schemas, and proper error handling
